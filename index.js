@@ -7,6 +7,7 @@ const { PORT, MONGODB_URL } = process.env;
 const port = PORT || 8000;
 const authRouter = require("./Routes/Auth/auth.routes");
 const campaignRouter = require("./Routes/Campaign/campaign.routes");
+const donationRouter = require("./Routes/Donation/donor.routes");
 app.use(cors());
 app.use(express.json());
 
@@ -23,6 +24,7 @@ mongoose
 
 app.use("/api", authRouter);
 app.use("/api/campaign", campaignRouter);
+app.use("/api/donations", donationRouter);
 
 app.get("/", (req, res) => {
   res.send("server is online");

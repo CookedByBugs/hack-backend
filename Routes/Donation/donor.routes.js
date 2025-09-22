@@ -29,7 +29,7 @@ donationRouter.post("/create", async (req, res) => {
   }
 });
 
-router.get("/campaign/:id", async (req, res) => {
+donationRouter.get("/campaign/:id", async (req, res) => {
   try {
     const donations = await Donation.find({ campaignId: req.params.id })
       .populate("donorId", "name email") // fetch donor details
@@ -41,7 +41,7 @@ router.get("/campaign/:id", async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 });
-router.get("/donor/:id", async (req, res) => {
+donationRouter.get("/donor/:id", async (req, res) => {
   try {
     const donations = await Donation.find({ donorId: req.params.id }).populate(
       "campaignId",
