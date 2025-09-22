@@ -8,27 +8,15 @@ donationRouter.post("/create", async (req, res) => {
   const { donorId, campaignId, amount } = req.body;
 
   try {
-    // Find campaign first
     const campaign = await Campaign.findById(campaignId);
     if (!campaign) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Campaign not found" });
+      return res.status(404).json({ success: false, message: "Campaign not found" });
     }
 
-    // Check if campaign already completed
-    if (campaign.raisedAmount >= campaign.goalAmount) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Goal already reached" });
-    }
-
-    // Calculate donation that can actually be accepted
+    // Calculate how much can actually be accepted
     let acceptedAmount = amount;
     const remaining = campaign.goalAmount - campaign.raisedAmount;
-    if (amount > remaining) {
-      acceptedAmount = remaining; // cap donation
-    }
+    if (amount > remaining) acceptedAmount = remaining;
 
     // Save donation
     const donation = new Donation({
@@ -38,21 +26,28 @@ donationRouter.post("/create", async (req, res) => {
     });
     await donation.save();
 
-    // Update raised amount
+    // Update campaign raisedAmount
     campaign.raisedAmount += acceptedAmount;
+
+    // ✅ Automatically close campaign if goal reached
+    if (campaign.raisedAmount >= campaign.goalAmount) {
+      campaign.status = "closed";
+    }
+
     await campaign.save();
 
     res.status(201).json({
       success: true,
-      message: "Donation created successfully",
       donation,
       remaining: campaign.goalAmount - campaign.raisedAmount,
+      status: campaign.status,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
 
 donationRouter.get("/campaign/:id", async (req, res) => {
   try {
@@ -69,7 +64,9 @@ donationRouter.get("/campaign/:id", async (req, res) => {
 });
 donationRouter.get("/donor/:id", verifyToken, async (req, res) => {
   try {
-    const donations = await Donation.find({ donorId: req.params.id }).populate(
+    const donations = await Donation.find({ donorId: req.params.id })
+    .sort({ createdAt: -1 })
+    .populate(
       "campaignId",
       "title goalAmount raisedAmount"
     );

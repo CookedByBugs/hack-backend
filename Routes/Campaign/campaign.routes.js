@@ -32,7 +32,9 @@ campaignRouter.post("/create", verifyToken, async (req, res) => {
 
 campaignRouter.get("/get", async (req, res) => {
   try {
-    const campaign = await Campaign.find({ status: "active" });
+    const campaign = await Campaign.find({ status: "active" }).sort({
+      createdAt: -1,
+    });
     res.send(campaign);
   } catch (error) {
     console.error(error);
@@ -62,7 +64,5 @@ campaignRouter.put("/update/:id", async (req, res) => {
     res.status(500).json({ msg: "Error", error });
   }
 });
-
-
 
 module.exports = campaignRouter;
