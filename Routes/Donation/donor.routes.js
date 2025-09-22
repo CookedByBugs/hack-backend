@@ -53,6 +53,7 @@ donationRouter.get("/campaign/:id", async (req, res) => {
   try {
     const donations = await Donation.find({ campaignId: req.params.id })
       .sort({ createdAt: -1 })
+      .limit(10)
       .populate("donorId", "name email") // fetch donor details
       .populate("campaignId", "title goalAmount raisedAmount"); // fetch campaign info
 

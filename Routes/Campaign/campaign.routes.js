@@ -30,7 +30,20 @@ campaignRouter.post("/create", verifyToken, async (req, res) => {
   }
 });
 
-campaignRouter.get("/get", async (req, res) => {
+campaignRouter.get("/get", verifyToken, async (req, res) => {
+  try {
+    const campaign = await Campaign.find({
+      status: "active",
+      createdBy: req.user.id,
+    }).sort({
+      createdAt: -1,
+    });
+    res.send(campaign);
+  } catch (error) {
+    console.error(error);
+  }
+});
+campaignRouter.get("/get-public", async (req, res) => {
   try {
     const campaign = await Campaign.find({ status: "active" }).sort({
       createdAt: -1,
